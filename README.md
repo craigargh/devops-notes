@@ -230,6 +230,8 @@ Or by using its file:
 kubectl delete -f guitar-api-service.yaml
 ```
 
+Pods are not immediately killed when deleted, instead they are given a grace period of around 30 seconds. This is so that they can finish responding to any existing requests. They are given the `Terminating` status during this period and do not receive any new requests.
+
 There are a number of Kubernetes commands used for debugging. You can use these commands to view logs, access and run commands in a container, and copy files to a container.
 
 To view logs on a pod:
@@ -247,6 +249,11 @@ kubectl exec -it <pod-name> -- bash
 To copy a local file to a container:
 ```bash
 kubectl cp <pod-name>:/pod/path/to/file /local/path/to/file
+```
+
+To copy a container file to a local folder:
+```bash
+kubectl cp  /local/path/to/file <pod-name>:/pod/path/to/file
 ```
 
 You can use the help command with any kubectl command:
@@ -317,3 +324,36 @@ kubectl apply -f kuard-pod.yaml
 ```
 
 
+To access a pod you can use port-forwarding. This should not be used to setup production access to a pod, but is useful for debugging a pod.
+
+```bash
+kubectl port-forward kuard 8080:8080
+```
+
+The pod can now be accessed at `localhost:8080`
+
+You can view the logs of the pod
+
+
+```bash
+kubectl logs kuard
+```
+
+You can also access logs from the previous instance of the container using the `--previous` flag. This is useful for debugging containers that have died
+
+```bash
+kubectl logs kuard --previous
+```
+
+You can execute commands on a pod:
+
+```bash
+kubectl exec kuard date
+```
+
+And activate an interactive terminal in the pod:
+```bash
+kubectl exec -it kuard ash
+```
+
+Health checks monitor the status of a pod.
