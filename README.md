@@ -356,4 +356,83 @@ And activate an interactive terminal in the pod:
 kubectl exec -it kuard ash
 ```
 
-Health checks monitor the status of a pod.
+### Health Checks
+
+Health checks monitor the status of a pod. Kubernetes uses these to check if the pod is still running and if it isn't it can restart it. 
+
+There are multiple types of health check. The default one used by Kubernetes is a process helath check. A process health check essentially just checks if the pod is still running.
+
+However, process health checks are not suitable for all problems. For example if a service is deadlocked and not processing new requests it will still pass a process health check.
+
+Liveness health checks are used to check if pod is functionining correctly. For example for an API a liveness check can be used to check it is reponding to new requests. These checks are applicaiton specific and need to be defined in the pod manifest. Liveness checks are defined per container. So multiple containers in a pod will have a liveness check defined for each container in the pod.
+
+In the following example the status of the service is checked with a liveness probe health check. The liveness probe makes a http request to the `/healthy` endpoint on port 8080.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard
+spec:
+  containers:
+  - image: gcr.io/kuar-demo/kuard-amd64:1
+    name: kuard
+    livenessProbe:
+      httpGet:
+        path: /healthy
+        port: 8080
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+    ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+```
+
+The `initialDelaySeconds` sets the amount of time before the first liveness check is carried out. This gives the container time to start up. The service must respond within 1 seconds. The check is made every 10 seconds. If the endpoint does not return a successful response three times in a row the liveness check is considered as failed and the container will be restarted.
+
+In addition to `httpGet` liveness health checks, there are `tcpSocket` and `exec` liveness health checks. The `tcpSocket` check calls a TCP socket. The `exec` check can be used to run an arbitrary command in the container. If the `exec` returns a 0 exit code then the check is considered to have passed.
+
+A readiness probe check to see if the application is ready. [THEY ARE COVERED LATER IN THE BOOK]
+
+
+### Resource Management
+
+Utilisation is a measurement of the physical resources being used versus the amount purchased. Low utilisation means that the capacity of the resources far outweighs what is being used. This can be inefficienct cost-wise. 
+
+With Kubernetes resource management you can improve the utilisation of resources. You can specify two different resource metrics: the resource request (minimum required) and; the resource limits (the maximum required). Kubernetes will automatically put pods on nodes based on their resource requirements.
+
+CPU and memory are the most commonly requested resources. 
+
+You can define the resource requests in the pod manifest:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard
+spec:
+  containers:
+  - image: gcr.io/kuard-demo/kuard-amd64:1
+    name: kuard
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "128Mi"
+    ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+```
+
+Resources are requested by container, not pod. The pod's resource request is the sum of all the containers.
+
+### Persistent Data with Volumes
+
+When pods are deleted or a container restarts, all of the data in the filesystem is lost. This is not ideal for databases and other applications that need persistent storage.
+
+
+
+
