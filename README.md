@@ -276,7 +276,7 @@ All of the containers in a pod are always deployed on the same node/machine. App
 
 Pods are defined using Pod manifests, which are text files that declaratively define the configuration of the pod. Declarative configuration outlines a desired state for the pod that a service must follow. This is different to imperative coniguration, which is where a series of commands are followed to get to the desired state.
 
-Pods manifests are submitted to Kubernetes which stores them in etcd. The scheduler then places pods onto nodes depending on their resource requirements and the resources available on the nodes.
+Pods manifests are submitted to Kubernetes which stores them in etcd. The `kubelet` daemon is responsible for creating the containers and monitoring them. The scheduler places pods onto nodes depending on their resource requirements and the resources available on the nodes.
 
 Kubernetes tries to make sure that replicas of the same object are placed on different nodes to improve reliability and reduce the impact of node failures. 
 
@@ -433,6 +433,30 @@ Resources are requested by container, not pod. The pod's resource request is the
 
 When pods are deleted or a container restarts, all of the data in the filesystem is lost. This is not ideal for databases and other applications that need persistent storage.
 
+To set up persistent storage two things are required: a defintion for the pod and; a mount for all the containers in the pod that need to access the container.
 
+```yaml
+apiVersion: v1
+kind: pod
+metadata: 
+  name: kuard
+spec:
+  volumes:
+  	- name: "kuard-data"
+  	  hostPath: 
+  	    path: "/var/lib/kaurd"
+  containers:
+    - image: gcr.io/kuar-demo/kuard-amd64:1
+      name: kuard
+      volumeMounts:
+      	- mountPath: "/data"
+      	  name: "kaurd-data"
+      ports:
+      	- containerPort: 8080
+      	  name: http
+      	  protocol: TCP
+```
 
+The `volumes` spec defines the volumes at the pod level. The `volumeMounts` mounts the container to the pod's volumes. The name in the `volumeMounts` should match one of the pod's volumes.
 
+It's also possible to use remote disks outside of the Kubernetes cluster, such as those hosted on AWS or GCP.
