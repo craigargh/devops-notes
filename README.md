@@ -127,10 +127,134 @@ The dashboard should now be available at `localhost:8001/ui` or `localhost:8001/
 
 ## Kubectl Commands
 
+Namespaces are used to group components in the Kubernetes cluster. With the `--namespace` flag you can filter resources by their namespace.
+
+For example 
+
+```bash
+kubectl get services --namespace guitar-api
+```
+
+The default namespace can be changed permanently using contexts. These contexts can be named and are stored so that it is easy to switch between contexts.
+
+To create a context for an existing namespace:
+
+```bash
+kubectl config set-context backend-api --namespace=guitar-api 
+```
+
+To switch to that context:
+
+```bash 
+kubectl config use-context backend-api
+```
 
 
 
+Kubectl get is the main command for listing resources. It will filter by the current context when getting sthese resources. The format for the get command:
 
+```bash
+kubectl get <resource-name>
+```
 
+For example
+
+```bash
+kubectl get services
+```
+
+Objects are the different components that you can deploy to your Kubernetes cluster. For example a single pod is an object, so is a service.
+
+You can choose to get a specific objects for a particular resource type by specifying the object name:
+
+```bash
+kubectl get <resource-name> <object-name>
+```
+
+For example:
+
+```bash
+kubectl get services guitar-api
+```
+
+The output for the get command can show additional information using the `-o` flag. With `-o json` or `-o yaml` you can also view the additional information as either of these formats:
+
+```bash
+kubectl get services guitar-api -o json
+```
+
+With kubectl you can create, edit and delete objects on the Kubernetes cluster. 
+
+The objects are represented as either json or yaml.
+
+To create or update an object from a file definition:
+
+```bash
+kubectl apply -f  guitar-api-service.yaml
+```
+
+You can also edit an object currently running on the cluster:
+
+```bash
+kubcetl edit <resource-name> <object-name>
+```
+
+For example:
+
+```bash
+kubectl edit services guitar-api
+```
+
+After saving the file it will update on the cluster.
+
+To delete an object
+
+```bash
+kubectl delete <resource-name> <object-name>
+```
+
+For example:
+```bash
+kubectl delete services guitar-api
+```
+
+Or by using its file:
+
+```bash 
+kubectl delete -f guitar-api-service.yaml
+```
+
+There are a number of Kubernetes commands used for debugging. You can use these commands to view logs, access and run commands in a container, and copy files to a container.
+
+To view logs on a pod:
+
+```bash
+kubectl logs <pod-name>
+```
+
+To access a container and run commands on the container:
+
+```bash
+kubectl exec -it <pod-name> -- bash
+```
+
+To copy a local file to a container:
+```bash
+kubectl cp <pod-name>:/pod/path/to/file /local/path/to/file
+```
+
+You can use the help command with any kubectl command:
+
+```bash
+kubectl help <command>
+```
+
+For example:
+
+```bash
+kubectl help get
+```
+
+## Pods
 
 
