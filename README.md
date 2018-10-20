@@ -183,6 +183,12 @@ The output for the get command can show additional information using the `-o` fl
 kubectl get services guitar-api -o json
 ```
 
+Whereas using `-o wide` will include more columns:
+
+```bash
+kubectl get services guitar-api -o wide
+```
+
 With kubectl you can create, edit and delete objects on the Kubernetes cluster. 
 
 The objects are represented as either json or yaml.
@@ -256,5 +262,58 @@ kubectl help get
 ```
 
 ## Pods
+
+Pods are made up of one or more containers. If two containers need to share the same reources, such as a file system, they should be in the same pod. For all other cases containers should be put in different pods.
+
+All of the containers in a pod are always deployed on the same node/machine. Applications in the same pod share an IP address and port space/network namespace. Applications in different pods are isolated from each other even if they are on the same node. They have different IP addresses, hostnames, etc.
+
+Pods are defined using Pod manifests, which are text files that declaratively define the configuration of the pod. Declarative configuration outlines a desired state for the pod that a service must follow. This is different to imperative coniguration, which is where a series of commands are followed to get to the desired state.
+
+Pods manifests are submitted to Kubernetes which stores them in etcd. The scheduler then places pods onto nodes depending on their resource requirements and the resources available on the nodes.
+
+Kubernetes tries to make sure that replicas of the same object are placed on different nodes to improve reliability and reduce the impact of node failures. 
+
+To create a pod from an image with a default deployment configuration, you can run the following command (this should not be used for production and will be deprecated in the future):
+
+```bash
+kubectl run kuard --image=grc.io/kuar-demo/kuard-amd64:1
+```
+
+For the above command the pod will be named `kuard` using the first positional argument. The image source for the pod is set using the `--image` flag.
+
+After running the pod you can view it using 
+
+```bash
+kubectl get pods 
+```
+
+You can delete the deployment using
+
+```bash
+kubectl delete deployments/kuard
+```
+
+A pod manifest is used to define the configuration of a pod. This pod manifest creates a Pod
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard
+spec:
+  containers:
+  - image: gcr.io/kuar-demo/kuard-amd64:1
+    name: kuard
+    ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+```
+
+To deploy the pod manifest to the cluster and create the pod:
+
+```bash
+kubectl apply -f kuard-pod.yaml
+```
 
 
