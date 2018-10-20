@@ -58,8 +58,14 @@ Get the IP of the Minikube cluster:
 minikube ip
 ```
 
+View the minikube dashboard:
 
-## Kubectl
+```bash
+minikube dashboard
+```
+
+
+## Kubernetes Cluster Components
 
 Kubectl is a command-line tool used for interacting with the Kubernetes API.
 
@@ -87,9 +93,7 @@ kubectl describe nodes node-1
 
 With describe you can see things like whether the node has enough resources (e.g. memory, disk space, CPU). You can also views labels for the node, CPU usage and limits, and the pods running on the node.
 
-### Kubernetes Components
-
-There are various cluster components that make up a Kubernetes cluster. They are deployed automatically by Kubernetes when the cluster is created. They all run in the `Kube-system` namespace.
+There are various cluster components that make up a Kubernetes cluster. They are deployed automatically by Kubernetes when the cluster is created. They all run in the `Kube-system` namespace. A name space is used to organise components into a group. For example an `payments-api` namespace could be used to group resources used for a payments API.
 
 The Kubernetes Proxy is used for routing network traffic and load balancing. The proxy is present on every node in the cluster. To deploy it on every node, Kubernetes uses a `DaemonSet`.
 
@@ -113,7 +117,15 @@ The DNS also has a load balancing service:
 kubectl get services --namespace=kube-system kube-dns
 ```
 
+Kubernetes also has a built-in dashboard which can be used to monitor the cluster. To access the UI on your cluster you need to activate a local proxy to the cluster.
 
+```bash
+kubectl proxy
+```
+
+The dashboard should now be available at `localhost:8001/ui` or `localhost:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/#!/overview?namespace=default`
+
+## Kubectl Commands
 
 
 
