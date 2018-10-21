@@ -460,3 +460,60 @@ spec:
 The `volumes` spec defines the volumes at the pod level. The `volumeMounts` mounts the container to the pod's volumes. The name in the `volumeMounts` should match one of the pod's volumes.
 
 It's also possible to use remote disks outside of the Kubernetes cluster, such as those hosted on AWS or GCP.
+
+
+## Labels and Annotations
+
+Labels and annotations are key/value pairs that add metadata to your Kubernetes object.
+
+Labels are primarily used for grouping Kubernetes objects. For example you could have a label for objects relating to a specific API.
+
+Annotations are similar to labels, but they provide non-identifying information that can be used by tools and libraries. For example you can use annotations to set the icon for the object that is displayed by the Kubernetes dashboard UI. They are also used heavily in the rollout of deployments.
+
+Label keys should follow one of these formats:
+
+- `appVersion`
+- `app.version`
+- `gcr.io/appVersion`
+
+When using the `get` command you can show labels using by adding the `--show-labels` flag.
+
+```bash
+kubectl get services --show-labels
+```
+
+They can also be displayed as a column using the `-L` flag followed by the label key:
+
+```bash
+kubectl get services -L version
+```
+
+You can filter by labels using the `--selector` flag ([there are multiple comparisons that can be used to filter](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors)):
+
+```bash
+kubectl get services --selector="version=0.0.2"
+```
+
+Labels can be modified after an object is created using the `label` command:
+
+```bash
+kubectl label deployments guitar-api "version=0.0.2"
+```
+
+To remove a label you add a dash (`-`) to the end of the label's key:
+
+```bash
+kubectl label deployments guitar-api "version-"
+```
+
+Annotations are added to the metadata section of an object manifest:
+
+```yaml
+metadata:
+  annotations:
+    guitar.api/icon-url: "http//wwww.example.com/icon.png"
+```
+
+## Service Discovery
+
+
