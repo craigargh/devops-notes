@@ -395,7 +395,7 @@ The `initialDelaySeconds` sets the amount of time before the first liveness chec
 
 In addition to `httpGet` liveness health checks, there are `tcpSocket` and `exec` liveness health checks. The `tcpSocket` check calls a TCP socket. The `exec` check can be used to run an arbitrary command in the container. If the `exec` returns a 0 exit code then the check is considered to have passed.
 
-A readiness probe check to see if the application is ready. [THEY ARE COVERED LATER IN THE BOOK]
+A readiness probe check to see if the application is ready. 
 
 
 ### Resource Management
@@ -516,4 +516,35 @@ metadata:
 
 ## Service Discovery
 
+Service discovery is used to find which services are listening at which addresses for which services.
+
+The `Service` object is used to a expose another object with a service. Services use virtual IPs for the cluster IPs. Kubernetes DNS provides names for the services running in the cluster so that they can be discovered by other objects in the cluster. 
+
+You can create a service object quickly using the `expose` command (do not use in prod):
+
+```bash
+kubectl expose deployment guitar-api
+```
+
+### Readiness Checks
+
+Readiness checks are used to check if a service is ready to receive requests. This is because when a service is starting up it can't process requests. 
+
+A readiness check can be added to a pod manifest to determine whether the service is ready to receive requests:
+
+```yaml
+spec:
+  containers:
+    name: alpaca-prod
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: 8080
+      periodSeconds: 2
+      initialDelaySeconds: 0 
+      failureThreshold: 3
+      successThreshold: 1
+```
+
+NodePorts and LoadBalancers???
 
