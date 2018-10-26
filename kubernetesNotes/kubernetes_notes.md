@@ -599,3 +599,29 @@ To apply a replica set manifest:
 ```bash
 kubectl apply -f kuard-replicaset.yaml
 ```
+
+Scaling replicaSets can be done imperatively using the `scale` command. This can be used to quickly scale a set of pods without need to apply a manifest:
+
+```bash
+kubectl scale replicasets kuard --repicas=4
+```
+
+In production the `scale` commmand should only be used for emergencies as it will cause the config to drift from what is in source control.
+
+Ideally changes using the `scale` command should be updated in soure control as well.
+
+To scale the replicaSet decalratively you just need to update the `specs.replicas` key in the manifest then run the `apply` command.
+
+Horizontal pod autoscaling (HPA) is used by replicaSets to automatically create pods based on resource usage (e.g. memory or CPU)
+
+Vertical autoscaling (not currently available in Kubnernetes) scales the resources available to a pod based on usage (e.g. memory or CPU)
+
+There is also cluster autoscaling where the number of machines in the cluster is increased based on usage.
+
+To autoscale a set of pods with HPA:
+
+```
+kubectl autoscale replicaset kuard --min=2 --max=5 --cpu-percent=80 
+```
+
+You should avoid mixing imperative/declarative scaling with autoscaling. As they are decoupled they can cause conflicts betwen one another.
