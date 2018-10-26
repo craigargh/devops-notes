@@ -548,3 +548,54 @@ spec:
 
 NodePorts and LoadBalancers???
 
+
+## ReplicaSets
+
+ReplicaSets allow you to run multiple copies of the same container at the same time. This can have several benefits: 
+
+- Redundancy: failure of a single instance is negated as there are multiple other instances to take over
+- Scale: More requests can be processed by multiple instances
+- Sharding: different tasks can be processed in parallel by multiple instances
+
+A ReplicaSet has two main functions:
+- Define a template for the creation of multiple pods
+- Control the creation and management of those pods
+
+Replicated pods are managed in a reconciliation loop. A reconciliation loop compares desired state against the current state for pods in the cluster. When the current state deviates from the desired state, the reconciliation loop takes action to correct the current state. This is a self-healing process in Kubernetes as no human interaction is required to get the system to fix itself.
+
+Reconciliation loops for ReplicaSets manage scaling up, scaling down, node failures, and nodes rejoining the cluster.
+
+ReplicaSets manage pods, but are decoupled from them. ReplicaSets use labels to query the pods that they manage.
+
+Pod labels are used by the reconciliation to discover and track the pods it manages.
+
+LoadBalancers can distribute requests between multiple pods orchestrated by a ReplicaSet.
+
+ReplicaSet manifests must have:
+- A unique name
+- The defined number of pods to replicate
+- A pod template for the pods to be created
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  name: kuard
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kuard
+        version: "2"
+    spec:
+      containers: 
+        - name: kuard
+          image: "gcr.io/kuar-demo/kuard-amd64:2"
+```
+
+To apply a replica set manifest:
+
+```bash
+kubectl apply -f kuard-replicaset.yaml
+```
