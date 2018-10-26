@@ -500,6 +500,8 @@ Labels can be modified after an object is created using the `label` command:
 kubectl label deployments guitar-api "version=0.0.2"
 ```
 
+You can label any type of Kubernetes object (including nodes, pods, ReplicaSets, DaemonSets), not just deployments.
+
 To remove a label you add a dash (`-`) to the end of the label's key:
 
 ```bash
@@ -625,3 +627,85 @@ kubectl autoscale replicaset kuard --min=2 --max=5 --cpu-percent=80
 ```
 
 You should avoid mixing imperative/declarative scaling with autoscaling. As they are decoupled they can cause conflicts betwen one another.
+
+## DaemonSets
+
+DaemonSets schedule pods onto all or a specific subset of nodes on the cluster. 
+
+ReplicaSets are similar to DaemonSets. ReplicaSets should be used when the pod is decoupled from the architecture and can run on any node in the cluster. DaemonSets are for when you want to run on all nodes in the cluster, or a specific subset of nodes in the cluster.
+
+Node selectors can be used with DaemonSets to limit which nodes a pod will be deployed to. 
+
+A reconciliation loop is used to check the desired state of a DaemonSet matches the current state on the cluster.
+
+Like a ReplicaSet, the manifest for a DaemonSet has a template for the pods that it will create.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: kube-system
+  labels:
+    app: fluentd
+spec:
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      containers:
+      - name: fluentd
+        image: fluentd/fluentd:v0.14.10
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        VolumeMounts:
+        - name: /var/log
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+      terminationGracePeriodSeconds: 30
+      volumes: 
+      - name: varlog
+        hostPath: 
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: var/lib/docker/containers
+```
+
+You can use the apply command to deploy the DaemonSet manifest.
+
+To limit which nodes a DaemonSet can run on, you can use the nodeSelector property. 
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    app: nginx
+    ssd: "true"
+  name: nginx-fast-storage
+spec:
+  template:
+    metadata:
+      labels:
+        app: nginx
+        sdd: "true"
+    spec:
+      nodeSelector:
+        ssd: "true"
+      containers:
+      - name: nginx
+        image: nginx:1.10.0
+```
+
+When a label is added to a node that matches the nodeselector of the DaemonSet, the DaemonSet's pod will be deployed to that node as well. If the DaemonSet nodeselector label is removed from a node, the pod will be removed from that node.
+
+To enable rolling updates (similar to a deployment) with a DaemonSet you need to set the `spec.updateStrategy.type` field to `RollingUpdate`.
+
+
