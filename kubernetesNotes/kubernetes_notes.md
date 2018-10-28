@@ -189,6 +189,12 @@ Whereas using `-o wide` will include more columns:
 kubectl get services guitar-api -o wide
 ```
 
+You can continually watch a `get` using the `--watch/-w` flag. This will show any updates in real-time
+
+```bash
+kubectl get pods -w
+```
+
 With kubectl you can create, edit and delete objects on the Kubernetes cluster. 
 
 The objects are represented as either json or yaml.
@@ -709,3 +715,76 @@ When a label is added to a node that matches the nodeselector of the DaemonSet, 
 To enable rolling updates (similar to a deployment) with a DaemonSet you need to set the `spec.updateStrategy.type` field to `RollingUpdate`.
 
 
+## Jobs
+
+Jobs are used to run one-off or non-continuous tasks, such as batch jobs or database migrations. They have a shorter life-span than pods that run a continuous service and run until they have a successful exit code.
+
+If the task fails then a new pod will be created to run the task. Jobs can create multiple pods to run in parallel.
+
+When defining a job two attributes can be set: the number of completions for the job; and the number of jobs to run in parallel. To run once until completion, both of these should be set to 1.
+
+### One Shot
+
+To create a job that will run once, not in parallel:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oneshot
+  labels: 
+    chapter: jobs
+spec:
+  template:
+    metadata:
+      labels:
+        chapter: jobs
+    spec:
+      containers:
+      - name: kuard
+        image: gcr.io/kuar-demo/kuard-amd64:1
+        imagePullPolicy: Always
+        args:
+        - "--keygen-enable"
+        - "--keygen-exit-on-complete"
+        - "--keygen-num-to-gen=10"
+      restartPolicy: OnFailure
+```
+
+If the `restartPolicy` is set to `Never` it will create a new pod every time there's a failure. This can create a lot of junk pods in the cluster. Using `OnFailure` instead will reuse the existing pod on failure instead of creating new pods.
+
+Sometimes tasks will fail, but not cause an error code. For example, they might get stuck in an endless loop and not make any progress. To manage this Kubernetes allows you to set up liveness checks/probes for jobs.
+
+### Parallelism 
+
+You can run several jobs parallel. You can also limit the number of parallel pods that will be created at once, in order to reduce the load on the cluster.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oneshot
+  labels:
+    chapter: jobs
+spec:
+  parallelism: 5
+  completions: 10
+  template:
+    metadata:
+      labels:
+        chapter: jobs
+    spec:
+      containers:
+      - name: kuard
+        image: gcr.io/kuard_demo-amd64:1
+        imagePullPolicy: Always
+        args:
+        - "--keygen-enable"
+        - "--keygen-exit-on-complete"
+        - "--keygen-num-to-gen=10"
+      restartPolicy: OnFailure
+```
+
+### Work Queues
+
+You can create work queues and workers on Kubernetes.
