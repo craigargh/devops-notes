@@ -791,4 +791,14 @@ You can create work queues and workers on Kubernetes.
 
 ## ConfigMaps and Secrets
 
+When building a Docker image, it is good practice to use the same image in testing, staging and production. In order to make this possible, you need to provide different configurations to the same image for each of these environments. For example you will need to configure the staging image to point at a different database than production.
 
+Kubernetes provides ConfigMaps, which allow you to configure the same Docker image for different environments. Secrets are like ConfigMaps, but they store sensitive information.
+
+ConfigMaps can be thought of as environment variables that are passed to the pod when it is created. They can also be thought of as a small file system that exists in the cluster.
+
+To create a ConfigMap manifest:
+
+```yaml
+apiVersion:
+```
