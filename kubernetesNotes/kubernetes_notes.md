@@ -800,5 +800,5 @@ ConfigMaps can be thought of as environment variables that are passed to the pod
 To create a ConfigMap manifest:
 
 ```yaml
-apiVersion:
+apiVersion: v1
 ```
