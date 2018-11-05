@@ -801,4 +801,89 @@ To create a ConfigMap manifest:
 
 ```yaml
 apiVersion: v1
+kind: ConfigMap
+data: 
+  another-param: another-value
+  extra-param: extra-value
+  my-config.txt: | 
+    parameter1 = value1
+    parameter2 = value2
+  kind: ConfigMap
+metadata:
+  creationTimeStamp: ...
+  name: my-config
+  namespace: default
+  resourceVersion: "13556"
+  selfLink: /api/v1/namespaces/default/configmaps/my-config
+  uid: 3641c553-f7de-11e6-98c9-06135271a273
+```
+
+There are different ways to use ConfigMaps within a pod:
+- As a filesystem: A file is created for each entry based on the key name. The key values are used as the file contents.
+- As environment variables: The keys and values are used as environment variables.
+- As command line arguments: The keys and vales are used as command-line arguments for the containers.
+
+To use the ConfigMap values as a file system you mount a ConfigMap volume to the pod. The volume should reference the name of the ConfigMap object:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-config
+spec:
+  containers:
+    - name: test-container
+      image: gcr.io/kuar-demo/kuard-amd64:1
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: config-volume
+          mountPath: /config
+  volumes:
+    - name: config-volume
+      configMap: 
+        name: my-config
+  restartPolicy: Never
+```
+
+To use the ConfigMap as environment variables:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: kuard-config
+spec:
+  containers:
+    - name: test-container
+      image: gcr.io/kuar-demo/kuard-amd64:1
+      imagePullPolicy: Always
+      env:
+        - name: ANOTHER_PARAM
+          valueFrom:
+            configMapKeyRef:
+              name: my-config
+              key: another-pod
+```
+
+To use the ConfigMap as a command-line argument, you need to also set it as an environment variable:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-config
+spec:
+  containers:
+    - name: test-container
+      image: gcr.io/kuard-demo/kuard-amd64:1
+      imagePullPolicy: Always
+      command:
+        - "/kuard"
+        - "$(EXTRA_PARAM)"
+      env:
+        - name: EXTRA_PARAM
+          valueFrom: 
+            configMapKeyRef:
+              name: my-config
+              key: extra-param
 ```
