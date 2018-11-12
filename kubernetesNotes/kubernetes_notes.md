@@ -1,5 +1,9 @@
 # Kubernetes Notes
 
+
+Sources:
+- Ingresses https://www.youtube.com/watch?v=HwogE64wjmw
+
 ## Docker
 
 Example Docker file:
@@ -887,3 +891,76 @@ spec:
               name: my-config
               key: extra-param
 ```
+
+## Ingresses
+
+Services expose pods in the cluster to other pods and to the outside world.
+
+Services are typically one of two types:
+- ClusterIP: Internal service that can only be accessed within the cluster
+- NodePort: External service that can be accessed from outside the cluster
+
+NodePorts can be further configured to use a LoadBalancer. 
+
+An Ingress is a collection of rules that allow in-bound connections to reach cluster Services. The Services must be exposed via NodePorts.
+
+Ingresses expose Services via external URLs. Ingresses are intermediaries between domain names to service endpoints. Ingresses decouple the deployment from the actual DNS name.
+
+External load balancers can be configured to work with Kubernetes via Ingresses.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  backend:
+    serviceName: nginx
+    servicePort: 80
+```
+
+Ingresses require different setup on Minikube comparsed to public cloud providers like Google Cloud Platform.
+
+Static IP addresses are essnetial for using Ingresses. Be default they use ethereal IP addresses that will change when the Ingresses object is restarted. The static IP address makes sure that when restarted the Ingress will be at the same IP.
+
+The static IP address needs to be reserved with the cloud provider. In the example below the static IP was called `nginx-static-ip`
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations: 
+    kubernetes.io/ingress.global-static-api-name: nginx-static-ip
+spec:
+  backend: 
+    serviceName: nginx
+    servicePort: 80
+```
+
+The same ingress can be used for multiple services without requiring multiple domains or load balancers.
+
+The setup to allow multiple services run using a single domain is called a fanout ingress as it maps multiple services using different paths:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: fanout-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: nginx
+          servicePort: 80
+      - path: /echo
+        backend:
+          serviceName: echoserver
+          servicePort: 8080
+```
+
+Ingresses are actaully deployed as pods, but behave differently in that they manage access to the cluster and cannot be viewed as regular pods.
+
+
