@@ -892,6 +892,58 @@ spec:
               key: extra-param
 ```
 
+### Secrets
+
+Secrets are similar to ConfigMaps, except they are used to store sensitive data.
+
+The values in secrets must be base64 encoded:
+
+```bash
+$ echo -n 'admin' | base64
+YWRtaW4=
+$ echo -n '1234' | base64
+Y54gd6e
+```
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-creds
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: Y54gd6e
+```
+
+Secrets can also be used for storing tls certificates, storing creds for Docker image registries and stuff.
+
+To setup a Pod to consume secrets you need to mount the secrets as a volume or use them as environment variables, as was shown above with ConfigMaps.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-config
+spec:
+  containers:
+    - name: test-container
+      image: gcr.io/kuar-demo/kuard-amd64:1
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: secret-volume
+          mountPath: /secret
+  volumes:
+    - name: secret-volume
+      secret: 
+        name: db-creds
+  restartPolicy: Never
+```
+
+## Deployments
+
+
+
 ## Ingresses
 
 Services expose pods in the cluster to other pods and to the outside world.
