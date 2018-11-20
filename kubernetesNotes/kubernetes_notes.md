@@ -942,6 +942,91 @@ spec:
 
 ## Deployments
 
+Pods and ReplicaSets are tied to specific images. It is not expected that these images will ever change during the pod's lifetime.
+
+Deployments are used to manage new releases of your software to the Kubernetes cluster.
+
+User-configurable rollouts are used to manage the release of new software to the deployments. Rollouts allow you to set the amount of time to wait between upgrades. They also perform health checks to ensure the new release is healthy before replacing the old pod. This removes downtime from new releases.
+
+Deployments are managed by the Kubernetes cluster deployment controller.
+
+The rollouts are managed by the controller on the server-side cluster so that unreliable internet connections on the client-side do not affect reliability and safety of new releases.
+
+Deployments manage ReplicaSets, which in turn manage Pods. Deleting a Deployment also deletes any related ReplicaSets and Pods.
+
+Deleting a Pod created by a deployment will restart a new Pod, due to the desired state defined in the Deployment.
+
+To define a Deployment manifest:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations: 
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    run: nginx
+  name: nginx
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels: 
+      run: nginx
+  strategy: 
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: nginx
+    spec:
+      containers:
+      - image: nginx:1.7.12
+        imagePullPolicy: Always
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+```
+
+The `strategy` object in the manifest dictates how the rollout will occur. There are two options for this: `RollingUpdate` and `Recreate`.
+
+You can view the rollout history of a Deployment with `kubectl rollout history`.
+
+
+```bash
+kubectl rollout history deployment nginx
+```
+
+To view a specific rollout revision you can add the `--revision` flag:
+
+```bash
+kubectl rollout history deployment nginx --revision=2
+```
+
+To update an Deployment you can use the `set image` command. This will change the Deployment's image and create new pods with that image.
+
+```bash
+kubectl set image deployment nginx-deployment nginx=nginx:1.9.1
+``` 
+
+To rollback to a previous deployment revision you can use the `rollout undo` command:
+
+```bash
+kubectl rollout undo deployment nginx
+```
+
+To specify a specific revision to rollback to use the `--to-revision` flag:
+
+```bash 
+kubectl rollout undo deployment nginx --to-revision=3
+```
+
+Setting the `--to-revision` value to `0` will rollback to the previous release.
+
+All of the revision history is kept for a deployment. To limit the amount of time that it keeps the revisions set the `revisionHistoryLimit` value in the manifest's spec. The value should be the number of days that you want to keep the history for.
+
 
 
 ## Ingresses
