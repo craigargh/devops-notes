@@ -992,6 +992,14 @@ spec:
 
 The `strategy` object in the manifest dictates how the rollout will occur. There are two options for this: `RollingUpdate` and `Recreate`.
 
+The `RollingUpdate` strategy allows you to rollout a new version while still receiving traffic to the old pod. This is useful for customer-facing applications. It updates one pod at a time and is slower than a `Recreate` strategy. As pods are being updated, it can lead to multiple versions of an APi or front-end being used simultaneously for a small amount of time.
+
+The `maxUnavailable` and `maxSurge` values are used to set the behaviour of a `RollingUpdate`. `MaxUnavailable` sets the number of pods that can be down during the update. It can either be an absolute number (e.g. 3) or a percentage (e.g. 30%).
+
+The `maxSurge` parameter creates additional pods during the update so that availability is not reduced during the rollout. It can also be expressed as an absolute number or a percentage.
+
+The `Recreate` strategy updates the pod image of a `ReplicaSet`, then stops all of its pods. The `ReplicaSet` will then recreate all of the pods with the new image. This can lead to downtime.
+
 You can view the rollout history of a Deployment with `kubectl rollout history`.
 
 
@@ -1027,7 +1035,18 @@ Setting the `--to-revision` value to `0` will rollback to the previous release.
 
 All of the revision history is kept for a deployment. To limit the amount of time that it keeps the revisions set the `revisionHistoryLimit` value in the manifest's spec. The value should be the number of days that you want to keep the history for.
 
+When the deployment controller checks if a new Pod is ready, you may want to add an additional wait time in addition to the readiness check to ensure that the pod is definitely behaving correctly. You can do this by setting the `minReadySeconds` in the manifest:
 
+```yaml
+spec:
+  minReadySeconds: 60
+```
+You can also set a timeout where the deployment will fail if the readiness checks do not pass within a certain time period. This will stop the deployment and rollback to the previous version:
+
+```yaml
+spec:
+  progressDeadlineSeconds: 600
+```
 
 ## Ingresses
 
@@ -1100,4 +1119,6 @@ spec:
 
 Ingresses are actaully deployed as pods, but behave differently in that they manage access to the cluster and cannot be viewed as regular pods.
 
+
+## Storage
 
