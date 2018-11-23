@@ -1122,3 +1122,7 @@ Ingresses are actaully deployed as pods, but behave differently in that they man
 
 ## Storage
 
+By default, containers that run on Kubernetes are stateless. When they are restarted they will lose the contents of their file systems. 
+
+
+
