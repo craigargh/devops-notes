@@ -1170,9 +1170,6 @@ subsets:
 
 One limitation of external services is that you cannot perform health checks.
 
-
-```
-
 ### Singletons
 
-
+For some storage, such as a MySQL database you may want to create a singleton of the service on your cluster.
