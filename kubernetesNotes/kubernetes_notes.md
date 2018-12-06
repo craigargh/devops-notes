@@ -1101,3 +1101,58 @@ spec:
 Ingresses are actaully deployed as pods, but behave differently in that they manage access to the cluster and cannot be viewed as regular pods.
 
 
+## Storage
+
+When working with specific types of containers in Kubernetes you will want to maintain state. For example a database needs to retain records. 
+
+By default when a container is restarted it will lose state. To alleviate this for containers that require state persistent storage can be set up with Kubernetes.
+
+### External Service
+
+One type of persistent storage is an external service. For example if you are running a database on a legacy server or using a paid hosting solution. 
+
+You can use Kubernete's services to make the external service appear like it is running on the cluster by using the Kubernetes cluster DNS. The cluster DNS will redirect to the external service, giving other services access to the service like it was on the cluster. Using this will make it easier to swap out the service to one that is actually running on the cluster during testing or enitrely at a later date.
+
+The manifest for an external service is defined like so:
+
+```yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: external-database
+spec:
+  type: ExternalService
+  externalName: www.database-hosting-company.com
+```
+
+For external services that do not have a DNS, only an IP address, the setup is a little different. The Service manifest has no `externalName` and requires an additional `Endpoint` manifest:
+
+```yaml
+kind: Service
+apiVersion: v1
+metadata: 
+  name: external-ip-database
+```
+
+The `Endpoint` manifest:
+
+```yaml
+kind: Endpoint
+apiVersion: v1
+metadata:
+  name: external-ip-database
+subsets:
+  - addresses: 
+    - ip: 192.168.0.1
+    ports:
+    - port: 3306
+```
+
+One limitation of external services is that you cannot perform health checks.
+
+
+```
+
+### Singletons
+
+
