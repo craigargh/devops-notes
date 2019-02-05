@@ -940,6 +940,21 @@ spec:
   restartPolicy: Never
 ```
 
+To add a secret for a private Docker repo, first create a secret:
+
+```bash
+kubectl create secret docker-registry private-registry --docker-server="docker.io" --docker-username="USERNAME" --docker-password="PASSWORD" --docker-email="EMAIL"
+```
+
+Secondly, make sure that the pod spec has the `imagePullSecrets.name`:
+
+```yaml
+spec:
+  imagePullSecrets:
+    - name: private-registry
+``` 
+
+
 ## Deployments
 
 Pods and ReplicaSets are tied to specific images. It is not expected that these images will ever change during the pod's lifetime.
